@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+APP_HOME=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
+JAVA_CMD=${JAVA_HOME:+$JAVA_HOME/bin/}java
+
+if ! command -v "$JAVA_CMD" >/dev/null 2>&1; then
+  echo "未找到 Java。请安装 64 位 JDK/JRE 8，并设置 JAVA_HOME。" >&2
+  exit 2
+fi
+
+JAVA_VERSION=$("$JAVA_CMD" -version 2>&1 | awk -F '"' '/version/ {print $2; exit}')
+case "$JAVA_VERSION" in
+  1.8.*|8.*) ;;
+  *) echo "警告：本版本以 Java 8 为发布基线，当前 Java 为 $JAVA_VERSION。" >&2 ;;
+esac
+
+exec "$JAVA_CMD" ${JAVA_OPTS:-} -jar "$APP_HOME/lib/hdfs-perf-inspector.jar" "$@"
